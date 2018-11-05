@@ -21,6 +21,15 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+
+                <xs:element name="Projects">
+                    <xs:complexType>
+                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                            <xs:element ref="Project"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
             </xs:all>
         </xs:complexType>
     </xs:element>
@@ -28,11 +37,33 @@
     <xs:element name="User">
         <xs:complexType>
             <xs:sequence>
-                <xs:element type="xs:string" name="email"/>
                 <xs:element type="xs:string" name="fullName"/>
             </xs:sequence>
+            <xs:attribute type="xs:string" name="email" use="required"/>
             <xs:attribute type="flagType" name="flag" use="required"/>
             <xs:attribute type="xs:IDREF" name="city" use="required"/>
+            <xs:attribute type="xs:IDREFS" name="groupRef" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="Project">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="xs:string" name="description"/>
+                <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="Group">
+                        <xs:complexType>
+                            <xs:complexContent>
+                                <xs:restriction base="xs:anyType">
+                                    <xs:attribute type="xs:ID" name="name" use="required"/>
+                                    <xs:attribute type="groupType" name="type" use="required"/>
+                                </xs:restriction>
+                            </xs:complexContent>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="name" use="required"/>
         </xs:complexType>
     </xs:element>
 
@@ -41,6 +72,14 @@
             <xs:enumeration value="active"/>
             <xs:enumeration value="deleted"/>
             <xs:enumeration value="superuser"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="groupType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CURRENT"/>
+            <xs:enumeration value="FINISHED"/>
+            <xs:enumeration value="REGISTERING"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -53,4 +92,6 @@
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
+
+
 </xs:schema>
