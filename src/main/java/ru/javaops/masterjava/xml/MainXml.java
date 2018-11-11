@@ -7,15 +7,17 @@ import ru.javaops.masterjava.xml.schema.*;
 import ru.javaops.masterjava.xml.util.JaxbParser;
 import ru.javaops.masterjava.xml.util.Schemas;
 import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
+import ru.javaops.masterjava.xml.util.XsltProcessor;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 
+import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 
@@ -36,7 +38,29 @@ public class MainXml {
 
 //        doJAXB(projectName);
 
-        doSTAX(projectName);
+//        doSTAX(projectName);
+
+        doXSLT(projectName);
+
+    }
+
+    private static void doXSLT(String projectName) {
+
+        try(InputStream xslInputStream = Resources.getResource("users.xsl").openStream();
+            InputStream xmlInputStream = Resources.getResource("payload.xml").openStream()) {
+
+            XsltProcessor processor = new XsltProcessor(xslInputStream);
+            String names = processor.transform(xmlInputStream);
+            System.out.println(names);
+            List<String> listNames = Arrays.asList(names.split("\\n"));
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -66,18 +90,7 @@ public class MainXml {
                 users.put(email, name);
             }
 
-
-//            Set<Map.Entry<String, String>> set = users.entrySet();
-//            List<Map.Entry<String, String>> list = new ArrayList<>(set);
-//            Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
-//                public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
-//                    System.out.println(o1.getValue());
-//                    System.out.println(o2.getValue());
-//                    return (o1.getValue()).compareTo(o2.getValue());
-//                }
-//            });
-
-            System.out.println(stringUsersToHtml(users, projectName));
+            System.out.println(usersToHtml(users, projectName));
 
 
         } catch (XMLStreamException | IOException e) {
@@ -94,7 +107,7 @@ public class MainXml {
 //        return result;
 //    }
 
-    private static String stringUsersToHtml(Map<String, String> list, String projectName) {
+    private static String usersToHtml(Map<String, String> list, String projectName) {
         ContainerTag htmlTable = table().attr("border", "1")
                 .attr("cellpadding", "10")
                 .attr("cellspacing", "0");
