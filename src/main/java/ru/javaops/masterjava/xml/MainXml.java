@@ -6,19 +6,18 @@ import j2html.tags.ContainerTag;
 import ru.javaops.masterjava.xml.schema.*;
 import ru.javaops.masterjava.xml.util.JaxbParser;
 import ru.javaops.masterjava.xml.util.Schemas;
+import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
 
 import javax.xml.bind.JAXBException;
-import java.io.BufferedWriter;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.util.*;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
-import static javax.management.Query.attr;
 
 // Реализовать класс MainXml, который принимает параметром имя
 // проекта в тестовом xml и выводит отсортированный список его участников (использовать JAXB).
@@ -34,6 +33,82 @@ public class MainXml {
     public static void main(String[] args) {
         String projectName = args[0];
 
+
+//        doJAXB(projectName);
+
+        doSTAX(projectName);
+
+
+    }
+
+    private static void doSTAX(String projectName) {
+        try (StaxStreamProcessor processor =
+                     new StaxStreamProcessor(Resources.getResource("payload.xml").openStream())) {
+            XMLStreamReader reader = processor.getReader();
+            Map<String, String> users = new HashMap<>();
+            while (reader.hasNext()) {
+                int event = reader.next();
+                String email = null;
+                String name = null;
+                if (event == XMLEvent.START_ELEMENT) {
+                    if ("User".equals(reader.getLocalName())) {
+                        if (reader.getAttributeValue(3) != null && reader.getAttributeValue(3).contains(projectName)) {
+                            email = reader.getAttributeValue(1);
+                        }
+                    }
+                }
+
+                if (event == XMLEvent.START_ELEMENT) {
+                    if ("fullName".equals(reader.getLocalName())) {
+                        name = reader.getLocalName();
+                    }
+                }
+                users.put(email, name);
+            }
+
+
+//            Set<Map.Entry<String, String>> set = users.entrySet();
+//            List<Map.Entry<String, String>> list = new ArrayList<>(set);
+//            Collections.sort(list, new Comparator<Map.Entry<String, String>>() {
+//                public int compare(Map.Entry<String, String> o1, Map.Entry<String, String> o2) {
+//                    System.out.println(o1.getValue());
+//                    System.out.println(o2.getValue());
+//                    return (o1.getValue()).compareTo(o2.getValue());
+//                }
+//            });
+
+            System.out.println(stringUsersToHtml(users, projectName));
+
+
+        } catch (XMLStreamException | IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+//    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+//        Map<K, V> result = new LinkedHashMap<>();
+//        Stream<Map.Entry<K, V>> st = map.entrySet().stream();
+//        st.sorted(Comparator.comparing(e -> e.getValue())).forEach(e -> result.put(e.getKey(), e.getValue()));
+//        return result;
+//    }
+
+    private static String stringUsersToHtml(Map<String, String> list, String projectName) {
+        ContainerTag htmlTable = table().attr("border", "1")
+                .attr("cellpadding", "10")
+                .attr("cellspacing", "0");
+
+        htmlTable.with(h2(projectName));
+        htmlTable.with(tr().with(th("User name"), th("User email")));
+        for (Map.Entry<String, String> entry : list.entrySet()) {
+            htmlTable.with(tr().with(td(entry.getKey()), td(entry.getValue())));
+        }
+
+        return html().with(title("Html table")).with(body().with(htmlTable)).render();
+    }
+
+    private static void doJAXB(String projectName) {
         try {
             Payload payload = JAXB_PARSER.unmarshal(Resources.getResource("payload.xml").openStream());
             List<Project> projects = payload.getProjects().getProject();
