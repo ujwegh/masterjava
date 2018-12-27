@@ -1,6 +1,7 @@
 package ru.javaops.masterjava.xml.util;
 
 import com.google.common.io.Resources;
+import org.junit.Ignore;
 import org.junit.Test;
 import ru.javaops.masterjava.xml.schema.CityType;
 import ru.javaops.masterjava.xml.schema.ObjectFactory;
