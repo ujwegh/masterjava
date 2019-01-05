@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <title>Good Thymes Virtual Grocery</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+<div align="center">
+  <div>
+    <img src="../../images/hqdefault.jpg" alt="GTVG logo" title="GTVG logo"
+         th:src="@{/images/hqdefault.jpg}"/>
+  </div>
+  <h1>HELLO THERE!!!</h1>
+  <br>
+  <h2>Please insert schema.xml file</h2>
+  <br>
+  <form method="POST" enctype="multipart/form-data" action="">
+    File to upload: <input type="file" name="upfile">
+    <br/>
+    <br/>
+    <input type="submit" value="Press"> to upload the file!
+  </form>
+</div>
+
+
+</body>
+</html>
