@@ -2,6 +2,7 @@ package ru.javaops.masterjava.upload;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -12,9 +13,12 @@ import org.apache.tomcat.util.http.fileupload.FileItemStream;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.apache.tomcat.util.http.fileupload.util.Streams;
 import org.thymeleaf.context.WebContext;
+import ru.javaops.masterjava.model.User;
 
 @WebServlet("/")
 public class UploadServlet extends HttpServlet {
+
+  private UserCasterByStax casterByStax = new UserCasterByStax();
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -34,21 +38,22 @@ public class UploadServlet extends HttpServlet {
       while (iterator.hasNext()) {
         FileItemStream item = iterator.next();
         String name = item.getFieldName();
-        InputStream stream = item.openStream();
         if (!item.isFormField()) {
-          System.out.println("File field " + name + " with file name "
-              + item.getName() + " detected.");
-          // Process the input stream
-          ThymeleafListener.engine.process("results", ctx, resp.getWriter());
+          try (InputStream stream = item.openStream()) {
+            System.out.println("File field " + name + " with file name "
+                + item.getName() + " detected.");
+            // Process the input stream
+            List<User> userList = casterByStax.proceesUsersByStax(stream);
+            ctx.setVariable("users", userList);
+            ThymeleafListener.engine.process("results", ctx, resp.getWriter());
+            break;
+          }
 
         }
       }
-
-
-
-
     } catch (Exception e) {
-
+      e.printStackTrace();
+      ThymeleafListener.engine.process("results", ctx, resp.getWriter());
     }
 
   }
