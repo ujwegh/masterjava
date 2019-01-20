@@ -21,6 +21,8 @@ import static ru.javaops.masterjava.common.web.ThymeleafListener.engine;
 public class UploadServlet extends HttpServlet {
 
     private final UserProcessor userProcessor = new UserProcessor();
+    private final ToDBUploader uploader = new ToDBUploader();
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -31,7 +33,6 @@ public class UploadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         final WebContext webContext = new WebContext(req, resp, req.getServletContext(), req.getLocale());
-
         try {
 //            http://docs.oracle.com/javaee/6/tutorial/doc/glraq.html
             Part filePart = req.getPart("fileToUpload");
@@ -40,6 +41,9 @@ public class UploadServlet extends HttpServlet {
             }
             try (InputStream is = filePart.getInputStream()) {
                 List<User> users = userProcessor.process(is);
+
+                uploader.upload(users, users.size());
+
                 webContext.setVariable("users", users);
                 engine.process("result", webContext, resp.getWriter());
             }
