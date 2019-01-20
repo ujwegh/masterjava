@@ -32,4 +32,12 @@ public class UserDaoTest extends AbstractDaoTest<UserDao> {
         List<User> users = dao.getWithLimit(5);
         Assert.assertEquals(FIST5_USERS, users);
     }
+
+//    @Test
+//    public void insertAll() {
+//        List<User> users = UserTestData.FIST5_USERS;
+//        dao.insertAll(users, users.size());
+//        Assert.assertEquals(users, dao.getWithLimit(users.size()));
+//
+//    }
 }
