@@ -35,6 +35,11 @@ public class UploadServlet extends HttpServlet {
         final WebContext webContext = new WebContext(req, resp, req.getServletContext(), req.getLocale());
         try {
 //            http://docs.oracle.com/javaee/6/tutorial/doc/glraq.html
+            int chunk = Integer.parseInt(req.getParameter("chunkSize"));
+            if (chunk <= 0) {
+                throw new IllegalStateException("Chunk size is invalid");
+            }
+
             Part filePart = req.getPart("fileToUpload");
             if (filePart.getSize() == 0) {
                 throw new IllegalStateException("Upload file have not been selected");
@@ -42,7 +47,7 @@ public class UploadServlet extends HttpServlet {
             try (InputStream is = filePart.getInputStream()) {
                 List<User> users = userProcessor.process(is);
 
-                uploader.upload(users, users.size());
+                uploader.upload(users, chunk);
 
                 webContext.setVariable("users", users);
                 engine.process("result", webContext, resp.getWriter());
